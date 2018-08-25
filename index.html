@@ -35,5 +35,16 @@
         }
       });
     </script>
+
+    <script>
+      //added fake auto-start
+      window.onload = function() { 
+        var elements = document.getElementsByClassName("dosbox-start");
+        if (elements.length > 0) {
+          elements[0].click();
+        }
+      };
+    </script>
+
   </body>
 </html>
