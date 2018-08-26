@@ -2,7 +2,12 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
     <title>Lode Runner in a Box</title>
+
+    <script type="text/javascript" src="js-dos-api-3.0.js"></script>
+    <script type="text/javascript" src="js/zingtouch.min.js"></script>
+
     <style type="text/css">
         body, html {
             height: 100%;
@@ -16,6 +21,7 @@
         .dosbox-container { width: 640px; height: 400px; }
         .dosbox-container > .dosbox-overlay { background: url(cover.png); }
     </style>
+
   </head>
   <body>
     <div id="dosbox"></div>
@@ -23,7 +29,7 @@
     <!--
     <button onclick="dosbox.requestFullScreen();">Make fullscreen</button>
     -->
-    <script type="text/javascript" src="js-dos-api-3.0.js"></script>
+    
     <script type="text/javascript">
       var dosbox = new Dosbox({
         id: "dosbox",
@@ -36,7 +42,7 @@
       });
     </script>
 
-    <script>
+    <script type="text/javascript">
       //added fake auto-start
       window.onload = function() { 
         var elements = document.getElementsByClassName("dosbox-start");
@@ -44,6 +50,33 @@
           elements[0].click();
         }
       };
+    </script>
+
+    <script type="text/javascript">
+      var containerElement = document.getElementById('dosbox');
+      var activeRegion = ZingTouch.Region(containerElement);
+      
+      var longTap = new ZingTouch.Tap({ maxDelay: 1000 });
+
+      activeRegion.bind(containerElement, longTap, function(e) {
+
+        console.log(e);
+
+        var keyboardEvent = new KeyboardEvent("keydown", {
+          bubbles : true,
+          cancelable : true,
+          char : "Q",
+          key : "q",
+          shiftKey : true,
+          keyCode : 13
+        });
+        document.dispatchEvent(keyboardEvent);
+      });
+
+      document.onkeydown = function(evt) {
+        console.log(evt);
+      };
+
     </script>
 
   </body>
