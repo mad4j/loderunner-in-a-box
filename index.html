@@ -45,38 +45,136 @@
     <script type="text/javascript">
       //added fake auto-start
       window.onload = function() { 
-        var elements = document.getElementsByClassName("dosbox-start");
-        if (elements.length > 0) {
-          elements[0].click();
-        }
+        document
+          .querySelector(".dosbox-start")
+          .click();
       };
     </script>
 
     <script type="text/javascript">
+
+      const angleTollerance = 15.0;
+
+      const keybEsc = {
+        bubbles : true,
+        cancelable : true,
+        char : '\n',
+        key : "Enter",
+        code: "Enter",
+        keyCode : 13
+      };
+
+      const keybNum2 = {
+        bubbles : true,
+        cancelable : true,
+        char : '2',
+        key : "2",
+        code: "Numpad2",
+        keyCode : 98
+      };
+
+      const keybNum4 = {
+        bubbles : true,
+        cancelable : true,
+        char : '4',
+        key : "4",
+        code: "Numpad4",
+        keyCode : 100
+      };
+
+      const keybNum5 = {
+        bubbles : true,
+        cancelable : true,
+        char : '5',
+        key : "5",
+        code: "Numpad5",
+        keyCode : 101
+      };
+
+      const keybNum6 = {
+        bubbles : true,
+        cancelable : true,
+        char : '6',
+        key : "6",
+        code: "Numpad6",
+        keyCode : 102
+      }; 
+
+      const keybNum7 = {
+        bubbles : true,
+        cancelable : true,
+        char : '7',
+        key : "7",
+        code: "Numpad7",
+        keyCode : 103
+      }; 
+
+      const keybNum8 = {
+        bubbles : true,
+        cancelable : true,
+        char : '8',
+        key : "8",
+        code: "Numpad8",
+        keyCode : 104
+      }; 
+
+      const keybNum9 = {
+        bubbles : true,
+        cancelable : true,
+        char : '9',
+        key : "9",
+        code: "Numpad9",
+        keyCode : 105
+      };
+
       var containerElement = document.getElementById('dosbox');
       var activeRegion = ZingTouch.Region(containerElement);
       
-      var longTap = new ZingTouch.Tap({ maxDelay: 1000 });
-
-      activeRegion.bind(containerElement, longTap, function(e) {
-
-        console.log(e);
-
-        var keyboardEvent = new KeyboardEvent("keydown", {
-          bubbles : true,
-          cancelable : true,
-          char : "Q",
-          key : "q",
-          shiftKey : true,
-          keyCode : 13
-        });
-        document.dispatchEvent(keyboardEvent);
+      activeRegion.bind(containerElement, new ZingTouch.Tap(), function(e) {
+        document.dispatchEvent(new KeyboardEvent("keydown", keybNum5));
+        document.dispatchEvent(new KeyboardEvent("keyup", keybNum5));
       });
 
+      activeRegion.bind(containerElement, new ZingTouch.Pan(), function(e) {
+
+        var k = keybNum5;
+        var d = Math.floor(e.detail.data[0].currentDirection);
+
+        if ((d < 0.0+angleTollerance) || (d > 360.0-angleTollerance)) {
+          k = keybNum6;
+        }
+
+        if ((d > 45.0-angleTollerance) && (d < 45+angleTollerance)) {
+          k = keybNum9;
+        }
+
+        if ((d > 90.0-angleTollerance) && (d < 90.0+angleTollerance)) {
+          k = keybNum8;
+        }
+
+        if ((d > 180.0-angleTollerance) && (d < 180.0+angleTollerance)) {
+          k = keybNum4;
+        }
+
+        if ((d > 135.0-angleTollerance) && (d < 135+angleTollerance)) {
+          k = keybNum7;
+        }
+
+        if ((d > 270.0-angleTollerance) && (d < 270+angleTollerance)) {
+          k = keybNum2;
+        }
+
+        document.dispatchEvent(new KeyboardEvent("keydown", k));
+        document.dispatchEvent(new KeyboardEvent("keyup", k));
+      });
+/*
       document.onkeydown = function(evt) {
         console.log(evt);
       };
-
+      document.onkeyup = function(evt) {
+        console.log(evt);
+      };
+*/
     </script>
 
   </body>
