@@ -6,8 +6,7 @@
     <title>Lode Runner in a Box</title>
 
     <script type="text/javascript" src="js-dos-api-3.0.js"></script>
-    <script type="text/javascript" src="js/zingtouch.min.js"></script>
-
+    <script type="text/javascript" src="js/zingtouch-1.0.6.min.js"></script>
     <style type="text/css">
         body, html {
             height: 100%;
@@ -53,15 +52,18 @@
 
     <script type="text/javascript">
 
-      const angleTollerance = 24.5;
+      const tollerance = 90.0;
+      const half_tollerance = 0.5*tollerance;
+
+      var previous = 0.0;
 
       const keybEsc = {
         bubbles : true,
         cancelable : true,
-        char : '\n',
-        key : "Enter",
-        code: "Enter",
-        keyCode : 13
+        char : '\0',
+        key : "Esc",
+        code: "Esc",
+        keyCode : 27
       };
 
       const keybNum2 = {
@@ -130,47 +132,84 @@
       var containerElement = document.getElementById('dosbox');
       var activeRegion = ZingTouch.Region(containerElement);
       
-      activeRegion.bind(containerElement, new ZingTouch.Tap(), function(e) {
-        document.dispatchEvent(new KeyboardEvent("keydown", keybNum5));
-        document.dispatchEvent(new KeyboardEvent("keyup", keybNum5));
-      });
+      var tapTouch = new ZingTouch.Tap({ maxDelay: 3000 });
 
-      activeRegion.bind(containerElement, new ZingTouch.Pan(), function(e) {
+      activeRegion.bind(containerElement, tapTouch, function(e) {
 
-        var k = keybNum5;
-        var d = Math.floor(e.detail.data[0].currentDirection);
+        var t = e.detail.interval;
+        var k = keybEsc;
 
-        if ((d < 0.0+angleTollerance) || (d > 360.0-angleTollerance)) {
-          k = keybNum6;
-        }
-
-        if ((d > 45.0-angleTollerance) && (d < 45+angleTollerance)) {
-          k = keybNum9;
-        }
-
-        if ((d > 90.0-angleTollerance) && (d < 90.0+angleTollerance)) {
-          k = keybNum8;
-        }
-
-        if ((d > 180.0-angleTollerance) && (d < 180.0+angleTollerance)) {
-          k = keybNum4;
-        }
-
-        if ((d > 135.0-angleTollerance) && (d < 135+angleTollerance)) {
-          k = keybNum7;
-        }
-
-        if ((d > 270.0-angleTollerance) && (d < 270+angleTollerance)) {
-          k = keybNum2;
+        if (t > 1000) {
+          k = keybEsc;
+        } else {
+          k = keybNum5;
         }
 
         document.dispatchEvent(new KeyboardEvent("keydown", k));
         document.dispatchEvent(new KeyboardEvent("keyup", k));
       });
+
+      var panTouch = new ZingTouch.Pan();
+      var panStart = panTouch.start;
+
+      panTouch.start = function(inputs) {
+        previous = -1.0;
+        return panStart.call(this, inputs);
+      }
+
+      activeRegion.bind(containerElement, panTouch, function(e) { 
+
+        var k = keybNum5;
+        var d = Math.floor(e.detail.data[0].currentDirection);
+
+        d = Math.floor((d+half_tollerance) / tollerance) * tollerance;
+
+        if (d == 360.0) {
+          d = 0.0;
+        }
+
+        if (d == previous) {
+          return;
+        }
+
+        previous = d;
+
+        switch (d) {
+
+          case 0.0:
+            k = keybNum6;
+            break;
+          case 90.0:
+            k = keybNum8;
+            break;
+          case 180.0: 
+            k = keybNum4;
+            break;
+          case 270.0: 
+            k = keybNum2;
+            break;
+          default:
+            k = keybNum5;
+            break;
+        }
+
+        document.dispatchEvent(new KeyboardEvent("keydown", k));
+        document.dispatchEvent(new KeyboardEvent("keyup", k));
+      });
+
+      var rotateTouch = new ZingTouch.Rotate();
+
+      activeRegion.bind(containerElement, rotateTouch, function(e) { 
+
+        console.log(e.detail.distanceFromOrigin);
+      });
+
+
 /*
       document.onkeydown = function(evt) {
         console.log(evt);
       };
+
       document.onkeyup = function(evt) {
         console.log(evt);
       };
