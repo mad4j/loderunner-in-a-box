@@ -1,0 +1,36 @@
+
+
+<html>
+
+<head>
+  <script src="zingtouch.min.js"></script>
+</head>
+
+<body id="container" style="height: 100%;">
+
+  <p>Test</p>
+
+  <script>
+  
+    var zt = new ZingTouch.Region(document.body);
+    var myElement = document.body;
+
+    zt.bind(myElement)
+      .tap(handler)
+      .pan(handler)
+      .rotate(handler)
+      .pinch(handler);
+
+    function handler(e) {
+      console.log(e);
+      document.body.innerHTML += e.type + "<br/>";
+
+      setTimeout(function() {
+        document.body.innerHTML = "";
+      }, 5000);
+    }
+
+  </script>
+</body>
+
+</html>
