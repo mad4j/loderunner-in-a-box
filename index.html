@@ -211,7 +211,7 @@
         document.dispatchEvent(new KeyboardEvent("keyup", keybNum2));
       });
 
-      mc.add(new Hammer.Press({ event: "press", threshold: 0 }));
+      mc.add(new Hammer.Press({ event: "press", threshold: 9 }));
       //mc.get("press").recognizeWith("press");
 
       var firePressed = false;
