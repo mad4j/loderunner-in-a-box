@@ -6,7 +6,7 @@
     <title>Lode Runner in a Box</title>
 
     <script type="text/javascript" src="js-dos-api-3.0.js"></script>
-    <script type="text/javascript" src="js/zingtouch-1.0.6.min.js"></script>
+    <script type="text/javascript" src="js/hammer.min.js"></script>
     <style type="text/css">
         body, html {
             height: 100%;
@@ -52,10 +52,14 @@
 
     <script type="text/javascript">
 
-      const tollerance = 90.0;
-      const half_tollerance = 0.5*tollerance;
-
-      var previous = 0.0;
+      const keybEnter = {
+        bubbles : true,
+        cancelable : true,
+        char : '\n',
+        key : "Enter",
+        code: "Enter",
+        keyCode : 13
+      };
 
       const keybEsc = {
         bubbles : true,
@@ -100,7 +104,7 @@
         key : "6",
         code: "Numpad6",
         keyCode : 102
-      }; 
+      };
 
       const keybNum7 = {
         bubbles : true,
@@ -109,7 +113,7 @@
         key : "7",
         code: "Numpad7",
         keyCode : 103
-      }; 
+      };
 
       const keybNum8 = {
         bubbles : true,
@@ -118,7 +122,7 @@
         key : "8",
         code: "Numpad8",
         keyCode : 104
-      }; 
+      };
 
       const keybNum9 = {
         bubbles : true,
@@ -129,95 +133,98 @@
         keyCode : 105
       };
 
-      var containerElement = document.getElementById('dosbox');
-      var activeRegion = ZingTouch.Region(containerElement);
-      
-      var tapTouch = new ZingTouch.Tap({ maxDelay: 3000 });
+	    var el = document.querySelector("#dosbox");
+	    var mc = new Hammer.Manager(el);
 
-      activeRegion.bind(containerElement, tapTouch, function(e) {
+      mc.add(new Hammer.Tap({ event: "doubletap", taps: 2 }));
+      mc.add(new Hammer.Tap({ event: "singletap", taps: 1 }));
 
-        var t = e.detail.interval;
-        var k = keybEsc;
+      mc.get("doubletap").recognizeWith("singletap");
+      mc.get("singletap").requireFailure("doubletap");
 
-        if (t > 1000) {
-          k = keybEsc;
-        } else {
-          k = keybNum5;
+      mc.on("singletap", function(e) {
+        document.dispatchEvent(new KeyboardEvent("keydown", keybEnter));
+        document.dispatchEvent(new KeyboardEvent("keyup", keybEnter));
+      });
+
+      mc.on("doubletap", function(e) {
+        document.dispatchEvent(new KeyboardEvent("keydown", keybEsc));
+        document.dispatchEvent(new KeyboardEvent("keyup", keybEsc));
+      });
+
+      mc.add(new Hammer.Pan({ event: "pan"}));
+      mc.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+
+      var lastPan = "none";
+
+      mc.on("panstart panend pancancel", function(e) {
+        lastPan = "none";
+      });
+
+      mc.on("panleft", function(e) {
+
+        if (e.type == lastPan) {
+          return;
         }
-
+        
+        lastPan = e.type;
+        
+        var k = (firePressed) ? keybNum7 : keybNum4;
         document.dispatchEvent(new KeyboardEvent("keydown", k));
         document.dispatchEvent(new KeyboardEvent("keyup", k));
       });
 
-      var panTouch = new ZingTouch.Pan();
-      var panStart = panTouch.start;
+      mc.on("panright", function(e) {
 
-      panTouch.start = function(inputs) {
-        previous = -1.0;
-        return panStart.call(this, inputs);
-      }
-
-      activeRegion.bind(containerElement, panTouch, function(e) { 
-
-        var k = keybNum5;
-        var d = Math.floor(e.detail.data[0].currentDirection);
-
-        d = Math.floor((d+half_tollerance) / tollerance) * tollerance;
-
-        if (d == 360.0) {
-          d = 0.0;
-        }
-
-        if (d == previous) {
+        if (e.type == lastPan) {
           return;
         }
 
-        previous = d;
+        lastPan = e.type;
 
-        switch (d) {
-
-          case 0.0:
-            k = keybNum6;
-            break;
-          case 90.0:
-            k = keybNum8;
-            break;
-          case 180.0: 
-            k = keybNum4;
-            break;
-          case 270.0: 
-            k = keybNum2;
-            break;
-          default:
-            k = keybNum5;
-            break;
-        }
-
+        var k = (firePressed) ? keybNum9 : keybNum6;
         document.dispatchEvent(new KeyboardEvent("keydown", k));
         document.dispatchEvent(new KeyboardEvent("keyup", k));
       });
 
-      var swipeTouch = new ZingTouch.Swipe({ numInputs:2, escapeVelocity: 0.25 });
+      mc.on("panup", function(e) {
 
-      activeRegion.bind(containerElement, swipeTouch, function(e) { 
-
-        var k = keybNum5;
-        var d = Math.floor(e.detail.data[0].currentDirection) - 90.0;
-
-        if (d > 180.0) {
-          k = keybNum9;
-        } else {
-          k = keybNum7;
+        if (e.type == lastPan) {
+          return;
         }
 
-        document.dispatchEvent(new KeyboardEvent("keydown", k));
-        document.dispatchEvent(new KeyboardEvent("keyup", k));
+        lastPan = e.type;
 
-        console.log(d);
+        document.dispatchEvent(new KeyboardEvent("keydown", keybNum8));
+        document.dispatchEvent(new KeyboardEvent("keyup", keybNum8));
       });
 
+      mc.on("pandown", function(e) {
+
+        if (e.type == lastPan) {
+          return;
+        }
+
+        lastPan = e.type;
+
+        document.dispatchEvent(new KeyboardEvent("keydown", keybNum2));
+        document.dispatchEvent(new KeyboardEvent("keyup", keybNum2));
+      });
+
+      mc.add(new Hammer.Press({ event: "press", threshold: 0 }));
+      //mc.get("press").recognizeWith("press");
+
+      var firePressed = false;
+      mc.on("press pressup", function(e) {
+        firePressed = e.type == "press";
+        console.log(firePressed);
+      });
 
 /*
+      document.onkeypress = function(evt) {
+        console.log(evt);
+      };
+
       document.onkeydown = function(evt) {
         console.log(evt);
       };
