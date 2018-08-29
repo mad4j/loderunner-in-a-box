@@ -197,11 +197,23 @@
         document.dispatchEvent(new KeyboardEvent("keyup", k));
       });
 
-      var rotateTouch = new ZingTouch.Rotate();
+      var swipeTouch = new ZingTouch.Swipe({ numInputs:2, escapeVelocity: 0.25 });
 
-      activeRegion.bind(containerElement, rotateTouch, function(e) { 
+      activeRegion.bind(containerElement, swipeTouch, function(e) { 
 
-        console.log(e.detail.distanceFromOrigin);
+        var k = keybNum5;
+        var d = Math.floor(e.detail.data[0].currentDirection) - 90.0;
+
+        if (d > 180.0) {
+          k = keybNum9;
+        } else {
+          k = keybNum7;
+        }
+
+        document.dispatchEvent(new KeyboardEvent("keydown", k));
+        document.dispatchEvent(new KeyboardEvent("keyup", k));
+
+        console.log(d);
       });
 
 
