@@ -48,9 +48,6 @@
           .querySelector(".dosbox-start")
           .click();
       };
-    </script>
-
-    <script type="text/javascript">
 
       const keybEnter = {
         bubbles : true,
@@ -234,16 +231,13 @@
         dosbox.dosbox.requestFullScreen();
       });
 
-/*
+
       mc.add(new Hammer.Press({ event: "press", threshold: 9 }));
       //mc.get("press").recognizeWith("press");
-
-      var firePressed = false;
-      mc.on("press pressup", function(e) {
-        firePressed = e.type == "press";
-        console.log(firePressed);
+      mc.on("press", function(e) {
+        dosbox.requestFullScreen();
       });
-*/
+
 /*
       document.onkeypress = function(evt) {
         console.log(evt);
