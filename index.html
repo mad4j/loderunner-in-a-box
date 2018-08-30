@@ -25,11 +25,12 @@
   <body>
     <div id="dosbox"></div>
     <br/>
-    <!--
+  
     <button onclick="dosbox.requestFullScreen();">Make fullscreen</button>
-    -->
+  
     
     <script type="text/javascript">
+
       var dosbox = new Dosbox({
         id: "dosbox",
         onload: function (dosbox) {
@@ -39,9 +40,7 @@
           console.log("App '" + app + "' is runned");
         }
       });
-    </script>
-
-    <script type="text/javascript">
+    
       //added fake auto-start
       window.onload = function() { 
         document
