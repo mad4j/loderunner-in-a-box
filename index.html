@@ -48,9 +48,6 @@
           .querySelector(".dosbox-start")
           .click();
       };
-    </script>
-
-    <script type="text/javascript">
 
       const keybEnter = {
         bubbles : true,
@@ -136,22 +133,40 @@
 	    var el = document.querySelector("#dosbox");
 	    var mc = new Hammer.Manager(el);
 
-      mc.add(new Hammer.Tap({ event: "doubletap", taps: 2 }));
+      //mc.add(new Hammer.Tap({ event: "doubletap", taps: 2 }));
       mc.add(new Hammer.Tap({ event: "singletap", taps: 1 }));
 
-      mc.get("doubletap").recognizeWith("singletap");
-      mc.get("singletap").requireFailure("doubletap");
+      //mc.get("doubletap").recognizeWith("singletap");
+      //mc.get("singletap").requireFailure("doubletap");
 
       mc.on("singletap", function(e) {
-        document.dispatchEvent(new KeyboardEvent("keydown", keybEnter));
-        document.dispatchEvent(new KeyboardEvent("keyup", keybEnter));
-      });
 
+        var centerX = el.offsetLeft + el.offsetWidth / 2.0;
+        var centerY = el.offsetTop + el.offsetHeight / 2.0;
+
+        var x = e.center.x - centerX;
+        var y = e.center.y - centerY;
+        var r = Math.min(el.offsetWidth, el.offsetHeight) / 2.0;
+        
+        var k = keybEnter;
+
+        if (x*x+y*y < r*r) {
+          k = keybEnter;
+        } else if (x < 0) {
+          k = keybNum7;
+        } else {
+          k = keybNum9;
+        }
+
+        document.dispatchEvent(new KeyboardEvent("keydown", k));
+        document.dispatchEvent(new KeyboardEvent("keyup", k));
+      });
+/*
       mc.on("doubletap", function(e) {
         document.dispatchEvent(new KeyboardEvent("keydown", keybEsc));
         document.dispatchEvent(new KeyboardEvent("keyup", keybEsc));
       });
-
+*/
       mc.add(new Hammer.Pan({ event: "pan"}));
       mc.get("pan").set({ direction: Hammer.DIRECTION_ALL });
 
@@ -169,9 +184,8 @@
         
         lastPan = e.type;
         
-        var k = (firePressed) ? keybNum7 : keybNum4;
-        document.dispatchEvent(new KeyboardEvent("keydown", k));
-        document.dispatchEvent(new KeyboardEvent("keyup", k));
+        document.dispatchEvent(new KeyboardEvent("keydown", keybNum4));
+        document.dispatchEvent(new KeyboardEvent("keyup", keybNum4));
       });
 
       mc.on("panright", function(e) {
@@ -182,9 +196,8 @@
 
         lastPan = e.type;
 
-        var k = (firePressed) ? keybNum9 : keybNum6;
-        document.dispatchEvent(new KeyboardEvent("keydown", k));
-        document.dispatchEvent(new KeyboardEvent("keyup", k));
+        document.dispatchEvent(new KeyboardEvent("keydown", keybNum6));
+        document.dispatchEvent(new KeyboardEvent("keyup", keybNum6));
       });
 
       mc.on("panup", function(e) {
@@ -211,13 +224,18 @@
         document.dispatchEvent(new KeyboardEvent("keyup", keybNum2));
       });
 
-      mc.add(new Hammer.Press({ event: "press", threshold: 0 }));
-      //mc.get("press").recognizeWith("press");
+      mc.add(new Hammer.Pinch());
+      mc.get("pinch").set({ enable: true });
 
-      var firePressed = false;
-      mc.on("press pressup", function(e) {
-        firePressed = e.type == "press";
-        console.log(firePressed);
+      mc.on("pinchin", function(e) {
+        dosbox.dosbox.requestFullScreen();
+      });
+
+
+      mc.add(new Hammer.Press({ event: "press", threshold: 9 }));
+      //mc.get("press").recognizeWith("press");
+      mc.on("press", function(e) {
+        dosbox.requestFullScreen();
       });
 
 /*
