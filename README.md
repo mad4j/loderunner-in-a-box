@@ -16,3 +16,12 @@ Use the following commands
 | FireL  | Keypad7 | Page Up     | Tap near left corner  |
 | FireR  | Keypad9 | Page Down   | Tap near right corner |
 | Menu   | Esc     | -           | -                     |
+
+
+Using:
+
+* DosBox
+* Em-DosBox
+* JS-Dos
+* Emscripten
+* HammerJS
