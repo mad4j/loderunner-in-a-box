@@ -17,6 +17,7 @@
             background-color: #000000; 
             font-family: Verdana, Geneva, Tahoma, sans-serif;
         }
+        .page-container { text-align: center; }
         .dosbox-container { width: 640px; height: 400px; }
         .dosbox-container > .dosbox-overlay { background: url(cover.png); }
     </style>
@@ -24,11 +25,11 @@
   </head>
   <body>
 
-    <div id="dosbox"></div>
-    <br/>
-  
-    <button onclick="dosbox.requestFullScreen();">Make fullscreen</button>
-  
+    <div class="page-container">
+      <div id="dosbox"></div>
+      <br/>
+      <button onclick="dosbox.requestFullScreen();">Make fullscreen</button>
+    </div>
     
     <script type="text/javascript">
 
