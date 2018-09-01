@@ -6,7 +6,7 @@
     <title>Lode Runner in a Box</title>
 
     <script type="text/javascript" src="js-dos-api-3.0.js"></script>
-    <script type="text/javascript" src="js/hammer.min.js"></script>
+    <script type="text/javascript" src="hammer.min.js"></script>
     <style type="text/css">
         body, html {
             height: 100%;
@@ -17,18 +17,19 @@
             background-color: #000000; 
             font-family: Verdana, Geneva, Tahoma, sans-serif;
         }
+        .page-container { text-align: center; }
         .dosbox-container { width: 640px; height: 400px; }
         .dosbox-container > .dosbox-overlay { background: url(cover.png); }
     </style>
 
   </head>
   <body>
-	
-	
-    <div id="dosbox"></div>
-    <br/>
-  
-    <button onclick="dosbox.requestFullScreen();">Make fullscreen</button>
+
+    <div class="page-container">
+      <div id="dosbox"></div>
+      <br/>
+      <button onclick="dosbox.requestFullScreen();">Make fullscreen</button>
+    </div>
     
     <script type="text/javascript">
 
@@ -43,7 +44,7 @@
       });
     
       //added fake auto-start
-      window.onload = function() { 
+      window.onload = function(e) { 
         document
           .querySelector(".dosbox-start")
           .click();
@@ -224,11 +225,14 @@
         document.dispatchEvent(new KeyboardEvent("keyup", keybNum2));
       });
 
+
+
+
       mc.add(new Hammer.Pinch());
       mc.get("pinch").set({ enable: true });
 
       mc.on("pinchin", function(e) {
-        dosbox.dosbox.requestFullScreen();
+        dosbox.requestFullScreen();
       });
 
 
