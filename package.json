@@ -15,7 +15,10 @@
     "msdos",
     "arcade"
   ],
-  "author": "Daniele Olmisani",
+  "author": {
+    "name": "Daniele Olmisani",
+    "email": "daniele.olmisani@gmail.com"
+  },
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/mad4j/loderunner-in-a-box/issues"
