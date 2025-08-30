@@ -1,190 +1,182 @@
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!DOCTYPE html>
+<html lang="en">
 
-    <title>Lode Runner in a Box</title>
+<head>
+    <meta charset="UTF-8">
+    <title>Lode Runner</title>
 
-    <script type="text/javascript" src="js-dos-api-3.0.js"></script>
-    <script type="text/javascript" src="node_modules/hammerjs/hammer.min.js"></script>
-
-    <style type="text/css">
-        body, html {
+    <style>
+        html,
+        body {
             height: 100%;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #000000; 
-            font-family: Verdana, Geneva, Tahoma, sans-serif;
         }
-        .page-container { text-align: center; }
-        .dosbox-container { width: 640px; height: 400px; }
-        .dosbox-container > .dosbox-overlay { background: url(cover.png); }
+
+        #dos {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 
-  </head>
-  <body>
+    <!-- js-dos style sheet -->
+    <link rel="stylesheet" href="./js-dos.css">
 
-    <div class="page-container">
-      <div id="dosbox"></div>
-      <br/>
-      <button onclick="dosbox.requestFullScreen();">Make fullscreen</button>
-    </div>
-    
+    <!-- js-dos -->
+    <script src="./js-dos.js"></script>
+
+    <!-- hammer.js -->
+    <script src="./hammer.min.js"></script>
+</head>
+
+<body>
+
+    <div id="dos" style="width: 100%; height: 100%"></div>
+
     <script type="text/javascript">
 
-      //init DosBox emulator
-      var dosbox = new Dosbox({
-        id: "dosbox",
-        onload: function (dosbox) {
-          dosbox.run("GAME.zip", "./LR.COM");
-        },
-        onrun: function (dosbox, app) {
-          console.log("App '" + app + "' is runned");
-        }
-      });
-    
-      //added fake auto-start
-      window.onload = function(e) { 
-        document
-          .querySelector(".dosbox-start")
-          .click();
-      };
+        Dos(document.getElementById("dos"), {
+            url: "./lr.jsdos",
+            pathPrefix: "./emulators/",
+            theme: "dark",
+            kiosk: false,
+            autoStart: true,
+            noCursor: true,
+            noCloud: true,
+            noNetworking: true,
+        });
 
-      const keybEnter = {
-        char : '\n',
-        key : "Enter",
-        code: "Enter",
-        keyCode : 13
-      };
+        const keybEnter = {
+            char: '\n',
+            key: "Enter",
+            code: "Enter",
+            keyCode: 13
+        };
 
-      const keybEsc = {
-        char : '\0',
-        key : "Esc",
-        code: "Esc",
-        keyCode : 27
-      };
+        const keybEsc = {
+            char: '\0',
+            key: "Esc",
+            code: "Esc",
+            keyCode: 27
+        };
 
-      const keybNum2 = {
-        char : '2',
-        key : "2",
-        code: "Numpad2",
-        keyCode : 98
-      };
+        const keybNum2 = {
+            char: '2',
+            key: "2",
+            code: "Numpad2",
+            keyCode: 98
+        };
 
-      const keybNum4 = {
-        char : '4',
-        key : "4",
-        code: "Numpad4",
-        keyCode : 100
-      };
+        const keybNum4 = {
+            char: '4',
+            key: "4",
+            code: "Numpad4",
+            keyCode: 100
+        };
 
-      const keybNum5 = {
-        char : '5',
-        key : "5",
-        code: "Numpad5",
-        keyCode : 101
-      };
+        const keybNum5 = {
+            char: '5',
+            key: "5",
+            code: "Numpad5",
+            keyCode: 101
+        };
 
-      const keybNum6 = {
-        bubbles : true,
-        cancelable : true,
-        char : '6',
-        key : "6",
-        code: "Numpad6",
-        keyCode : 102
-      };
+        const keybNum6 = {
+            bubbles: true,
+            cancelable: true,
+            char: '6',
+            key: "6",
+            code: "Numpad6",
+            keyCode: 102
+        };
 
-      const keybNum7 = {
-        char : '7',
-        key : "7",
-        code: "Numpad7",
-        keyCode : 103
-      };
+        const keybNum7 = {
+            char: '7',
+            key: "7",
+            code: "Numpad7",
+            keyCode: 103
+        };
 
-      const keybNum8 = {
-        char : '8',
-        key : "8",
-        code: "Numpad8",
-        keyCode : 104
-      };
+        const keybNum8 = {
+            char: '8',
+            key: "8",
+            code: "Numpad8",
+            keyCode: 104
+        };
 
-      const keybNum9 = {
-        char : '9',
-        key : "9",
-        code: "Numpad9",
-        keyCode : 105
-      };
+        const keybNum9 = {
+            char: '9',
+            key: "9",
+            code: "Numpad9",
+            keyCode: 105
+        };
 
-	    var el = document.querySelector("#dosbox");
-	    var mc = new Hammer.Manager(el);
+        var el = document.getElementById("dos");
+        var hm = new Hammer.Manager(el);
 
-      mc.add(new Hammer.Tap({ event: "singletap", taps: 1 }));
-      mc.on("singletap", function(e) {
+        hm.add(new Hammer.Tap({ event: "singletap", taps: 1 }));
+        hm.on("singletap", function (e) {
 
-        var centerX = el.offsetLeft + el.offsetWidth / 2.0;
-        var centerY = el.offsetTop + el.offsetHeight / 2.0;
+            var centerX = el.offsetLeft + el.offsetWidth / 2.0;
+            var centerY = el.offsetTop + el.offsetHeight / 2.0;
 
-        var x = e.center.x - centerX;
-        var y = e.center.y - centerY;
-        var r = Math.min(el.offsetWidth, el.offsetHeight) / 2.0;
-        
-        var k = keybEnter;
+            var x = e.center.x - centerX;
+            var y = e.center.y - centerY;
+            var r = Math.min(el.offsetWidth, el.offsetHeight) / 2.0;
 
-        if (x*x+y*y < r*r) {
-          k = keybEnter;
-        } else if (x < 0) {
-          k = keybNum7;
-        } else {
-          k = keybNum9;
-        }
+            var k = keybEnter;
 
-        document.dispatchEvent(new KeyboardEvent("keydown", k));
-        document.dispatchEvent(new KeyboardEvent("keyup", k));
-      });
+            if (x * x + y * y < r * r) {
+                k = keybEnter;
+            } else if (x < 0) {
+                k = keybNum7;
+            } else {
+                k = keybNum9;
+            }
 
-      mc.add(new Hammer.Pan({ event: "pan"}));
-      mc.get("pan").set({ direction: Hammer.DIRECTION_ALL });
+            document.dispatchEvent(new KeyboardEvent("keydown", k));
+            document.dispatchEvent(new KeyboardEvent("keyup", k));
+        });
 
-      var lastPan = "none";
+        hm.add(new Hammer.Pan({ event: "pan" }));
+        hm.get("pan").set({ direction: Hammer.DIRECTION_ALL });
 
-      mc.on("panstart panend pancancel", function(e) {
-        lastPan = "none";
-      });
+        var lastPan = "none";
 
-      mc.on("panleft panright panup pandown", function(e) {
+        hm.on("panstart panend pancancel", function (e) {
+            lastPan = "none";
+        });
 
-        if (e.type == lastPan) {
-          return;
-        }
-        
-        lastPan = e.type;
+        hm.on("panleft panright panup pandown", function (e) {
 
-        var k = keybNum5;
-        switch(e.type) {
-          case "panleft":
-            k = keybNum4;
-            break;
-          case "panright":
-            k = keybNum6;
-            break;
-          case "panup":
-            k = keybNum8;
-            break;
-          case "pandown":
-            k = keybNum2;
-            break;
-          default:
-            k = keybNum5;
-            break;
-        }
-        
-        document.dispatchEvent(new KeyboardEvent("keydown", k));
-        document.dispatchEvent(new KeyboardEvent("keyup", k));
-      });
+            if (e.type == lastPan) {
+                return;
+            }
+
+            lastPan = e.type;
+
+            var k = keybNum5;
+            switch (e.type) {
+                case "panleft":
+                    k = keybNum4;
+                    break;
+                case "panright":
+                    k = keybNum6;
+                    break;
+                case "panup":
+                    k = keybNum8;
+                    break;
+                case "pandown":
+                    k = keybNum2;
+                    break;
+                default:
+                    k = keybNum5;
+                    break;
+            }
+
+            document.dispatchEvent(new KeyboardEvent("keydown", k));
+            document.dispatchEvent(new KeyboardEvent("keyup", k));
+        });
 
     </script>
+</body>
 
-  </body>
 </html>
