@@ -23,8 +23,6 @@
     <!-- js-dos -->
     <script src="./js-dos.js"></script>
 
-    <!-- hammer.js -->
-    <script src="./hammer.min.js"></script>
 </head>
 
 <body>
@@ -32,8 +30,8 @@
     <div id="dos" style="width: 100%; height: 100%"></div>
 
     <script type="text/javascript">
-
-        Dos(document.getElementById("dos"), {
+    document.addEventListener("DOMContentLoaded", function () {
+        const dosInstance = Dos(document.getElementById("dos"), {
             url: "./lr.jsdos",
             pathPrefix: "./emulators/",
             theme: "dark",
@@ -44,138 +42,152 @@
             noNetworking: true,
         });
 
-        const keybEnter = {
-            char: '\n',
-            key: "Enter",
-            code: "Enter",
-            keyCode: 13
-        };
-
-        const keybEsc = {
-            char: '\0',
-            key: "Esc",
-            code: "Esc",
-            keyCode: 27
-        };
-
-        const keybNum2 = {
-            char: '2',
-            key: "2",
-            code: "Numpad2",
-            keyCode: 98
-        };
-
-        const keybNum4 = {
-            char: '4',
-            key: "4",
-            code: "Numpad4",
-            keyCode: 100
-        };
-
-        const keybNum5 = {
-            char: '5',
-            key: "5",
-            code: "Numpad5",
-            keyCode: 101
-        };
-
-        const keybNum6 = {
-            bubbles: true,
-            cancelable: true,
-            char: '6',
-            key: "6",
-            code: "Numpad6",
-            keyCode: 102
-        };
-
-        const keybNum7 = {
-            char: '7',
-            key: "7",
-            code: "Numpad7",
-            keyCode: 103
-        };
-
-        const keybNum8 = {
-            char: '8',
-            key: "8",
-            code: "Numpad8",
-            keyCode: 104
-        };
-
-        const keybNum9 = {
-            char: '9',
-            key: "9",
-            code: "Numpad9",
-            keyCode: 105
-        };
+        // Use PC scan codes for js-dos
+        const keybEnter = { keyCode: 28 };
+        const keybEsc = { keyCode: 1 };
+        const keybNum2 = { keyCode: 80 };
+        const keybNum4 = { keyCode: 75 };
+        const keybNum5 = { keyCode: 76 };
+        const keybNum6 = { keyCode: 77 };
+        const keybNum7 = { keyCode: 71 };
+        const keybNum8 = { keyCode: 72 };
+        const keybNum9 = { keyCode: 73 };
 
         var el = document.getElementById("dos");
-        var hm = new Hammer.Manager(el);
+        
+        // Helper function to send key events using the new js-dos API
+        function sendKeyEvent(keyCode, isPressed) {
+            dosInstance.setKey(keyCode, isPressed);
+        }
 
-        hm.add(new Hammer.Tap({ event: "singletap", taps: 1 }));
-        hm.on("singletap", function (e) {
+        // Setup gesture handlers immediately (no need to wait for ready promise)
+            // --- Tap (touch/click) ---
+            el.addEventListener("click", function (e) {
+                e.preventDefault();
+                var rect = el.getBoundingClientRect();
+                var centerX = rect.left + rect.width / 2.0;
+                var centerY = rect.top + rect.height / 2.0;
+                var x = e.clientX - centerX;
+                var y = e.clientY - centerY;
+                var r = Math.min(rect.width, rect.height) / 2.0;
+                var k = keybEnter;
+                if (x * x + y * y < r * r) {
+                    k = keybEnter;
+                } else if (x < 0) {
+                    k = keybNum7;
+                } else {
+                    k = keybNum9;
+                }
+                sendKeyEvent(k.keyCode, true);
+                setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
+            });
 
-            var centerX = el.offsetLeft + el.offsetWidth / 2.0;
-            var centerY = el.offsetTop + el.offsetHeight / 2.0;
+            // --- Touch tap ---
+            el.addEventListener("touchend", function (e) {
+                e.preventDefault();
+                if (e.changedTouches.length > 0) {
+                    var touch = e.changedTouches[0];
+                    var rect = el.getBoundingClientRect();
+                    var centerX = rect.left + rect.width / 2.0;
+                    var centerY = rect.top + rect.height / 2.0;
+                    var x = touch.clientX - centerX;
+                    var y = touch.clientY - centerY;
+                    var r = Math.min(rect.width, rect.height) / 2.0;
+                    var k = keybEnter;
+                    if (x * x + y * y < r * r) {
+                        k = keybEnter;
+                    } else if (x < 0) {
+                        k = keybNum7;
+                    } else {
+                        k = keybNum9;
+                    }
+                    
+                    // Only trigger tap if this wasn't part of a pan gesture
+                    if (!panStart || (Math.abs(touch.clientX - panStart.x) < 10 && Math.abs(touch.clientY - panStart.y) < 10)) {
+                        sendKeyEvent(k.keyCode, true);
+                        setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
+                    }
+                }
+                panStart = null;
+            });
 
-            var x = e.center.x - centerX;
-            var y = e.center.y - centerY;
-            var r = Math.min(el.offsetWidth, el.offsetHeight) / 2.0;
-
-            var k = keybEnter;
-
-            if (x * x + y * y < r * r) {
-                k = keybEnter;
-            } else if (x < 0) {
-                k = keybNum7;
-            } else {
-                k = keybNum9;
+            // --- Pan (drag) ---
+            var panStart = null;
+            var lastPanDirection = null;
+            
+            function handlePan(dx, dy) {
+                var absDx = Math.abs(dx);
+                var absDy = Math.abs(dy);
+                var direction = "";
+                var k = keybNum5;
+                
+                if (absDx > absDy) {
+                    if (dx < 0) {
+                        direction = "left";
+                        k = keybNum4;
+                    } else {
+                        direction = "right";
+                        k = keybNum6;
+                    }
+                } else if (absDy > 0) {
+                    if (dy < 0) {
+                        direction = "up";
+                        k = keybNum8;
+                    } else {
+                        direction = "down";
+                        k = keybNum2;
+                    }
+                }
+                
+                // Only send if direction changed to avoid spam
+                if (direction !== lastPanDirection) {
+                    lastPanDirection = direction;
+                    sendKeyEvent(k.keyCode, true);
+                    setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
+                }
             }
-
-            document.dispatchEvent(new KeyboardEvent("keydown", k));
-            document.dispatchEvent(new KeyboardEvent("keyup", k));
-        });
-
-        hm.add(new Hammer.Pan({ event: "pan" }));
-        hm.get("pan").set({ direction: Hammer.DIRECTION_ALL });
-
-        var lastPan = "none";
-
-        hm.on("panstart panend pancancel", function (e) {
-            lastPan = "none";
-        });
-
-        hm.on("panleft panright panup pandown", function (e) {
-
-            if (e.type == lastPan) {
-                return;
-            }
-
-            lastPan = e.type;
-
-            var k = keybNum5;
-            switch (e.type) {
-                case "panleft":
-                    k = keybNum4;
-                    break;
-                case "panright":
-                    k = keybNum6;
-                    break;
-                case "panup":
-                    k = keybNum8;
-                    break;
-                case "pandown":
-                    k = keybNum2;
-                    break;
-                default:
-                    k = keybNum5;
-                    break;
-            }
-
-            document.dispatchEvent(new KeyboardEvent("keydown", k));
-            document.dispatchEvent(new KeyboardEvent("keyup", k));
-        });
-
+            // Mouse pan
+            el.addEventListener("mousedown", function (e) {
+                e.preventDefault();
+                panStart = { x: e.clientX, y: e.clientY };
+                lastPanDirection = null;
+            });
+            
+            el.addEventListener("mouseup", function (e) {
+                if (panStart) {
+                    var dx = e.clientX - panStart.x;
+                    var dy = e.clientY - panStart.y;
+                    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                        handlePan(dx, dy);
+                    }
+                    panStart = null;
+                    lastPanDirection = null;
+                }
+            });
+            
+            // Touch pan
+            el.addEventListener("touchstart", function (e) {
+                e.preventDefault();
+                if (e.touches.length === 1) {
+                    var t = e.touches[0];
+                    panStart = { x: t.clientX, y: t.clientY };
+                    lastPanDirection = null;
+                }
+            });
+            
+            // Handle ongoing pan during touchmove
+            el.addEventListener("touchmove", function (e) {
+                e.preventDefault();
+                if (panStart && e.touches.length === 1) {
+                    var t = e.touches[0];
+                    var dx = t.clientX - panStart.x;
+                    var dy = t.clientY - panStart.y;
+                    if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+                        handlePan(dx, dy);
+                    }
+                }
+            });
+    });
     </script>
 </body>
 
