@@ -30,10 +30,8 @@
     <div id="dos" style="width: 100%; height: 100%"></div>
 
     <script type="text/javascript">
-
-        var el = document.getElementById("dos");
-
-        const dosInstance = Dos(el, {
+    document.addEventListener("DOMContentLoaded", function () {
+        const dosInstance = Dos(document.getElementById("dos"), {
             url: "./lr.jsdos",
             pathPrefix: "./emulators/",
             theme: "dark",
@@ -44,15 +42,6 @@
             noNetworking: true,
         });
 
-
-    const keybNum7 = {
-        char : '7',
-        key : "7",
-        code: "Numpad7",
-        keyCode : 103
-      };
-
-
         // Use PC scan codes for js-dos
         const keybEnter = { keyCode: 28 };
         const keybEsc = { keyCode: 1 };
@@ -60,20 +49,33 @@
         const keybNum4 = { keyCode: 75 };
         const keybNum5 = { keyCode: 76 };
         const keybNum6 = { keyCode: 77 };
-        //const keybNum7 = { keyCode: 71 };
+        const keybNum7 = { keyCode: 71 };
         const keybNum8 = { keyCode: 72 };
         const keybNum9 = { keyCode: 73 };
 
-        // Helper function to send key events using the new js-dos API
+        var el = document.getElementById("dos");
+        var commandInterface = null;
+        
+        // Wait for dos instance to be ready and get the CommandInterface
+        dosInstance.ready.then((ci) => {
+            commandInterface = ci;
+            console.log("js-dos CommandInterface ready");
+        }).catch((err) => {
+            console.error("Failed to initialize js-dos:", err);
+        });
+        
+        // Helper function to send key events using the js-dos API
         function sendKeyEvent(keyCode, isPressed) {
-            console.log("Key event: " + keyCode + " isPressed: " + isPressed);
-            dosInstance.setKey(keyCode, isPressed);
+            if (commandInterface) {
+                commandInterface.sendKeyEvent(keyCode, isPressed);
+            } else {
+                console.warn("CommandInterface not ready yet");
+            }
         }
 
         // Setup gesture handlers immediately (no need to wait for ready promise)
         // --- Tap (touch/click) ---
         el.addEventListener("click", function (e) {
-            console.log(e);
             e.preventDefault();
             var rect = el.getBoundingClientRect();
             var centerX = rect.left + rect.width / 2.0;
@@ -89,11 +91,8 @@
             } else {
                 k = keybNum9;
             }
-
-            document.dispatchEvent(new KeyboardEvent("keydown", k));
-            document.dispatchEvent(new KeyboardEvent("keyup", k));
-            //sendKeyEvent(k.keyCode, true);
-            //setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
+            sendKeyEvent(k.keyCode, true);
+            setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
         });
 
         // --- Touch tap ---
