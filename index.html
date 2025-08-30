@@ -54,23 +54,10 @@
         const keybNum9 = { keyCode: 73 };
 
         var el = document.getElementById("dos");
-        var commandInterface = null;
-        
-        // Wait for dos instance to be ready and get the CommandInterface
-        dosInstance.ready.then((ci) => {
-            commandInterface = ci;
-            console.log("js-dos CommandInterface ready");
-        }).catch((err) => {
-            console.error("Failed to initialize js-dos:", err);
-        });
         
         // Helper function to send key events using the js-dos API
         function sendKeyEvent(keyCode, isPressed) {
-            if (commandInterface) {
-                commandInterface.sendKeyEvent(keyCode, isPressed);
-            } else {
-                console.warn("CommandInterface not ready yet");
-            }
+            dosInstance.setKey(keyCode, isPressed);
         }
 
         // Setup gesture handlers immediately (no need to wait for ready promise)
@@ -200,7 +187,7 @@
                 }
             }
         });
-
+    });
     </script>
 </body>
 
