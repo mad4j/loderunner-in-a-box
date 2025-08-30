@@ -30,8 +30,10 @@
     <div id="dos" style="width: 100%; height: 100%"></div>
 
     <script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", function () {
-        const dosInstance = Dos(document.getElementById("dos"), {
+
+        var el = document.getElementById("dos");
+
+        const dosInstance = Dos(el, {
             url: "./lr.jsdos",
             pathPrefix: "./emulators/",
             theme: "dark",
@@ -42,6 +44,15 @@
             noNetworking: true,
         });
 
+
+    const keybNum7 = {
+        char : '7',
+        key : "7",
+        code: "Numpad7",
+        keyCode : 103
+      };
+
+
         // Use PC scan codes for js-dos
         const keybEnter = { keyCode: 28 };
         const keybEsc = { keyCode: 1 };
@@ -49,26 +60,52 @@
         const keybNum4 = { keyCode: 75 };
         const keybNum5 = { keyCode: 76 };
         const keybNum6 = { keyCode: 77 };
-        const keybNum7 = { keyCode: 71 };
+        //const keybNum7 = { keyCode: 71 };
         const keybNum8 = { keyCode: 72 };
         const keybNum9 = { keyCode: 73 };
 
-        var el = document.getElementById("dos");
-        
         // Helper function to send key events using the new js-dos API
         function sendKeyEvent(keyCode, isPressed) {
+            console.log("Key event: " + keyCode + " isPressed: " + isPressed);
             dosInstance.setKey(keyCode, isPressed);
         }
 
         // Setup gesture handlers immediately (no need to wait for ready promise)
-            // --- Tap (touch/click) ---
-            el.addEventListener("click", function (e) {
-                e.preventDefault();
+        // --- Tap (touch/click) ---
+        el.addEventListener("click", function (e) {
+            console.log(e);
+            e.preventDefault();
+            var rect = el.getBoundingClientRect();
+            var centerX = rect.left + rect.width / 2.0;
+            var centerY = rect.top + rect.height / 2.0;
+            var x = e.clientX - centerX;
+            var y = e.clientY - centerY;
+            var r = Math.min(rect.width, rect.height) / 2.0;
+            var k = keybEnter;
+            if (x * x + y * y < r * r) {
+                k = keybEnter;
+            } else if (x < 0) {
+                k = keybNum7;
+            } else {
+                k = keybNum9;
+            }
+
+            document.dispatchEvent(new KeyboardEvent("keydown", k));
+            document.dispatchEvent(new KeyboardEvent("keyup", k));
+            //sendKeyEvent(k.keyCode, true);
+            //setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
+        });
+
+        // --- Touch tap ---
+        el.addEventListener("touchend", function (e) {
+            e.preventDefault();
+            if (e.changedTouches.length > 0) {
+                var touch = e.changedTouches[0];
                 var rect = el.getBoundingClientRect();
                 var centerX = rect.left + rect.width / 2.0;
                 var centerY = rect.top + rect.height / 2.0;
-                var x = e.clientX - centerX;
-                var y = e.clientY - centerY;
+                var x = touch.clientX - centerX;
+                var y = touch.clientY - centerY;
                 var r = Math.min(rect.width, rect.height) / 2.0;
                 var k = keybEnter;
                 if (x * x + y * y < r * r) {
@@ -78,116 +115,93 @@
                 } else {
                     k = keybNum9;
                 }
-                sendKeyEvent(k.keyCode, true);
-                setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
-            });
 
-            // --- Touch tap ---
-            el.addEventListener("touchend", function (e) {
-                e.preventDefault();
-                if (e.changedTouches.length > 0) {
-                    var touch = e.changedTouches[0];
-                    var rect = el.getBoundingClientRect();
-                    var centerX = rect.left + rect.width / 2.0;
-                    var centerY = rect.top + rect.height / 2.0;
-                    var x = touch.clientX - centerX;
-                    var y = touch.clientY - centerY;
-                    var r = Math.min(rect.width, rect.height) / 2.0;
-                    var k = keybEnter;
-                    if (x * x + y * y < r * r) {
-                        k = keybEnter;
-                    } else if (x < 0) {
-                        k = keybNum7;
-                    } else {
-                        k = keybNum9;
-                    }
-                    
-                    // Only trigger tap if this wasn't part of a pan gesture
-                    if (!panStart || (Math.abs(touch.clientX - panStart.x) < 10 && Math.abs(touch.clientY - panStart.y) < 10)) {
-                        sendKeyEvent(k.keyCode, true);
-                        setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
-                    }
-                }
-                panStart = null;
-            });
-
-            // --- Pan (drag) ---
-            var panStart = null;
-            var lastPanDirection = null;
-            
-            function handlePan(dx, dy) {
-                var absDx = Math.abs(dx);
-                var absDy = Math.abs(dy);
-                var direction = "";
-                var k = keybNum5;
-                
-                if (absDx > absDy) {
-                    if (dx < 0) {
-                        direction = "left";
-                        k = keybNum4;
-                    } else {
-                        direction = "right";
-                        k = keybNum6;
-                    }
-                } else if (absDy > 0) {
-                    if (dy < 0) {
-                        direction = "up";
-                        k = keybNum8;
-                    } else {
-                        direction = "down";
-                        k = keybNum2;
-                    }
-                }
-                
-                // Only send if direction changed to avoid spam
-                if (direction !== lastPanDirection) {
-                    lastPanDirection = direction;
+                // Only trigger tap if this wasn't part of a pan gesture
+                if (!panStart || (Math.abs(touch.clientX - panStart.x) < 10 && Math.abs(touch.clientY - panStart.y) < 10)) {
                     sendKeyEvent(k.keyCode, true);
                     setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
                 }
             }
-            // Mouse pan
-            el.addEventListener("mousedown", function (e) {
-                e.preventDefault();
-                panStart = { x: e.clientX, y: e.clientY };
+            panStart = null;
+        });
+
+        // --- Pan (drag) ---
+        var panStart = null;
+        var lastPanDirection = null;
+
+        function handlePan(dx, dy) {
+            var absDx = Math.abs(dx);
+            var absDy = Math.abs(dy);
+            var direction = "";
+            var k = keybNum5;
+
+            if (absDx > absDy) {
+                if (dx < 0) {
+                    direction = "left";
+                    k = keybNum4;
+                } else {
+                    direction = "right";
+                    k = keybNum6;
+                }
+            } else if (absDy > 0) {
+                if (dy < 0) {
+                    direction = "up";
+                    k = keybNum8;
+                } else {
+                    direction = "down";
+                    k = keybNum2;
+                }
+            }
+
+            // Only send if direction changed to avoid spam
+            if (direction !== lastPanDirection) {
+                lastPanDirection = direction;
+                sendKeyEvent(k.keyCode, true);
+                setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
+            }
+        }
+        // Mouse pan
+        el.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            panStart = { x: e.clientX, y: e.clientY };
+            lastPanDirection = null;
+        });
+
+        el.addEventListener("mouseup", function (e) {
+            if (panStart) {
+                var dx = e.clientX - panStart.x;
+                var dy = e.clientY - panStart.y;
+                if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+                    handlePan(dx, dy);
+                }
+                panStart = null;
                 lastPanDirection = null;
-            });
-            
-            el.addEventListener("mouseup", function (e) {
-                if (panStart) {
-                    var dx = e.clientX - panStart.x;
-                    var dy = e.clientY - panStart.y;
-                    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-                        handlePan(dx, dy);
-                    }
-                    panStart = null;
-                    lastPanDirection = null;
+            }
+        });
+
+        // Touch pan
+        el.addEventListener("touchstart", function (e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                var t = e.touches[0];
+                panStart = { x: t.clientX, y: t.clientY };
+                lastPanDirection = null;
+            }
+        });
+
+        // Handle ongoing pan during touchmove
+        el.addEventListener("touchmove", function (e) {
+            e.preventDefault();
+            if (panStart && e.touches.length === 1) {
+                var t = e.touches[0];
+                var dx = t.clientX - panStart.x;
+                var dy = t.clientY - panStart.y;
+                if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+                    handlePan(dx, dy);
                 }
-            });
-            
-            // Touch pan
-            el.addEventListener("touchstart", function (e) {
-                e.preventDefault();
-                if (e.touches.length === 1) {
-                    var t = e.touches[0];
-                    panStart = { x: t.clientX, y: t.clientY };
-                    lastPanDirection = null;
-                }
-            });
-            
-            // Handle ongoing pan during touchmove
-            el.addEventListener("touchmove", function (e) {
-                e.preventDefault();
-                if (panStart && e.touches.length === 1) {
-                    var t = e.touches[0];
-                    var dx = t.clientX - panStart.x;
-                    var dy = t.clientY - panStart.y;
-                    if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
-                        handlePan(dx, dy);
-                    }
-                }
-            });
-    });
+            }
+        });
+
     </script>
 </body>
 
