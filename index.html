@@ -54,9 +54,16 @@
         const keybNum9 = { keyCode: 73 };
 
         var el = document.getElementById("dos");
-        dosInstance.ready.then(function (ci) {
+        
+        // Helper function to send key events using the new js-dos API
+        function sendKeyEvent(keyCode, isPressed) {
+            dosInstance.setKey(keyCode, isPressed);
+        }
+
+        // Setup gesture handlers immediately (no need to wait for ready promise)
             // --- Tap (touch/click) ---
             el.addEventListener("click", function (e) {
+                e.preventDefault();
                 var rect = el.getBoundingClientRect();
                 var centerX = rect.left + rect.width / 2.0;
                 var centerY = rect.top + rect.height / 2.0;
@@ -71,12 +78,13 @@
                 } else {
                     k = keybNum9;
                 }
-                ci.sendKeyEvent(k.keyCode, true);
-                setTimeout(function () { ci.sendKeyEvent(k.keyCode, false); }, 50);
+                sendKeyEvent(k.keyCode, true);
+                setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
             });
 
             // --- Touch tap ---
             el.addEventListener("touchend", function (e) {
+                e.preventDefault();
                 if (e.changedTouches.length > 0) {
                     var touch = e.changedTouches[0];
                     var rect = el.getBoundingClientRect();
@@ -93,60 +101,92 @@
                     } else {
                         k = keybNum9;
                     }
-                    ci.sendKeyEvent(k.keyCode, true);
-                    setTimeout(function () { ci.sendKeyEvent(k.keyCode, false); }, 50);
+                    
+                    // Only trigger tap if this wasn't part of a pan gesture
+                    if (!panStart || (Math.abs(touch.clientX - panStart.x) < 10 && Math.abs(touch.clientY - panStart.y) < 10)) {
+                        sendKeyEvent(k.keyCode, true);
+                        setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
+                    }
                 }
+                panStart = null;
             });
 
             // --- Pan (drag) ---
             var panStart = null;
+            var lastPanDirection = null;
+            
             function handlePan(dx, dy) {
                 var absDx = Math.abs(dx);
                 var absDy = Math.abs(dy);
+                var direction = "";
                 var k = keybNum5;
+                
                 if (absDx > absDy) {
-                    if (dx < 0) k = keybNum4;
-                    else k = keybNum6;
+                    if (dx < 0) {
+                        direction = "left";
+                        k = keybNum4;
+                    } else {
+                        direction = "right";
+                        k = keybNum6;
+                    }
                 } else if (absDy > 0) {
-                    if (dy < 0) k = keybNum8;
-                    else k = keybNum2;
+                    if (dy < 0) {
+                        direction = "up";
+                        k = keybNum8;
+                    } else {
+                        direction = "down";
+                        k = keybNum2;
+                    }
                 }
-                ci.sendKeyEvent(k.keyCode, true);
-                setTimeout(function () { ci.sendKeyEvent(k.keyCode, false); }, 50);
+                
+                // Only send if direction changed to avoid spam
+                if (direction !== lastPanDirection) {
+                    lastPanDirection = direction;
+                    sendKeyEvent(k.keyCode, true);
+                    setTimeout(function () { sendKeyEvent(k.keyCode, false); }, 50);
+                }
             }
             // Mouse pan
             el.addEventListener("mousedown", function (e) {
+                e.preventDefault();
                 panStart = { x: e.clientX, y: e.clientY };
+                lastPanDirection = null;
             });
+            
             el.addEventListener("mouseup", function (e) {
                 if (panStart) {
                     var dx = e.clientX - panStart.x;
                     var dy = e.clientY - panStart.y;
-                    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
                         handlePan(dx, dy);
                     }
                     panStart = null;
+                    lastPanDirection = null;
                 }
             });
+            
             // Touch pan
             el.addEventListener("touchstart", function (e) {
+                e.preventDefault();
                 if (e.touches.length === 1) {
                     var t = e.touches[0];
                     panStart = { x: t.clientX, y: t.clientY };
+                    lastPanDirection = null;
                 }
             });
-            el.addEventListener("touchend", function (e) {
-                if (panStart && e.changedTouches.length > 0) {
-                    var t = e.changedTouches[0];
+            
+            // Handle ongoing pan during touchmove
+            el.addEventListener("touchmove", function (e) {
+                e.preventDefault();
+                if (panStart && e.touches.length === 1) {
+                    var t = e.touches[0];
                     var dx = t.clientX - panStart.x;
                     var dy = t.clientY - panStart.y;
-                    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                    if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
                         handlePan(dx, dy);
                     }
-                    panStart = null;
                 }
             });
-        });
     });
     </script>
 </body>

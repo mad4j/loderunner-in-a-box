@@ -24,6 +24,5 @@ Made possible using:
 * [Em-DosBox](https://github.com/dreamlayers/em-dosbox)
 * [JS-Dos](https://js-dos.com/)
 * [Emscripten](https://github.com/kripken/emscripten/wiki)
-* [HammerJS](https://js-dos.com/)
 
 see [LICENSE](LICENSE) file.
