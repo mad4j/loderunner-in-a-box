@@ -14,8 +14,6 @@
         #dos {
             width: 100%;
             height: 100%;
-            overscroll-behavior: contain;
-            touch-action: none;
         }
     </style>
 
@@ -70,6 +68,10 @@
         const KEY_P6 = 326;
         const KEY_P8 = 328;
 
+        // Prevent default touch actions like scrolling and refreshing
+        el.addEventListener('touchmove', function (e) {
+            e.preventDefault();
+        }, { passive: false });
 
         hm.add(new Hammer.Tap({ event: "singletap", taps: 1 }));
         hm.on("singletap", function (e) {
