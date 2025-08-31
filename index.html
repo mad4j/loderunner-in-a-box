@@ -74,17 +74,16 @@
         }, { passive: false });
 
         hm.add(new Hammer.Tap({ event: "singletap", taps: 1 }));
+
         hm.on("singletap", function (e) {
-
-            var centerX = el.offsetLeft + el.offsetWidth / 2.0;
-            var centerY = el.offsetTop + el.offsetHeight / 2.0;
-
+            var rect = el.getBoundingClientRect();
+            var centerX = rect.left + rect.width / 2.0;
+            var centerY = rect.top + rect.height / 2.0;
             var x = e.center.x - centerX;
             var y = e.center.y - centerY;
-            var r = Math.min(el.offsetWidth, el.offsetHeight) / 2.0;
+            var r = Math.min(rect.width, rect.height) / 2.0;
 
             var k = KEY_ENT;
-
             if (x * x + y * y < r * r) {
                 k = KEY_ENT;
             } else if (x < 0) {
@@ -92,7 +91,6 @@
             } else {
                 k = KEY_F2;
             }
-
             window.ci.sendKeyEvent(k, true);
             window.ci.sendKeyEvent(k, false);
         });
