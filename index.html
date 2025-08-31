@@ -66,13 +66,11 @@
         const KEY_P4 = 324;
         const KEY_P5 = 325;
         const KEY_P6 = 326;
-        const KEY_P8 = 328;   
+        const KEY_P8 = 328;
 
 
         hm.add(new Hammer.Tap({ event: "singletap", taps: 1 }));
         hm.on("singletap", function (e) {
-
-            console.log("Tap at", e.center.x, e.center.y);
 
             var centerX = el.offsetLeft + el.offsetWidth / 2.0;
             var centerY = el.offsetTop + el.offsetHeight / 2.0;
@@ -113,7 +111,7 @@
 
             lastPan = e.type;
 
-            var k = None;
+            var k = KEY_P5;
             switch (e.type) {
                 case "panleft":
                     k = KEY_P4;
@@ -128,14 +126,12 @@
                     k = KEY_P8;
                     break;
                 default:
-                    k = None;
+                    k = KEY_P5;
                     break;
             }
 
-            if (k != None) {
-                window.ci.sendKeyEvent(k, true);
-                window.ci.sendKeyEvent(k, false);
-            }
+            window.ci.sendKeyEvent(k, true);
+            window.ci.sendKeyEvent(k, false);
         });
 
     </script>
